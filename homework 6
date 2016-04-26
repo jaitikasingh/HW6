@@ -1,0 +1,124 @@
+#include <iostream> //include statements to use certain libraries
+#include <fstream>
+#include <string>
+#include <cstdlib>
+#include <vector>
+
+using namespace std; //standard namespace
+
+int hash_table[100000]; //creating a hashtable full of integers
+
+int extractionMethod(int number) { //the function to extraction
+    string initial = to_string(number);
+    char * valueC=new char[4];
+
+   valueC[0] = initial[2]; //changing the initial values of the arrays
+   valueC[1] = initial[4]; //changing the initial values of the arrays
+   valueC[2] = initial[6]; //changing the initial values of the arrays
+   valueC[3] = initial[7]; //changing the initial values of the arrays
+
+    return atoi(valueC); //atoi converts a string to an integer
+}
+
+int quadraticProbing(int key, int tableSize) //function for quadratic probing
+{
+    bool isFull = true; //if it is full
+    for (int i = 0; i < tableSize; i++) { //for loop incrementing through until it is less than the file size
+        if (hash_table[i] == 0) { //if it is equal to 0
+            isFull = false; //it is not full
+        }
+    }
+    if (isFull) return -1; //if it is full return -1
+    int i = 1;
+    while (hash_table[key] != 0) { //while the "key" initial is not 0
+        key += i * i;  //it will go through the values in the array use quadratic probing
+        i++;
+        key = key%tableSize;
+    }
+    return key; //it will return key
+}
+
+int main() //main function for calling the functions
+{
+    for (int i = 0; i < 100000; i++) {
+        hash_table[i] = 0;
+    }
+    ifstream this_file; //input file stream
+    ofstream outfile; //output file stream
+    string filename; //a string called filename
+
+    cout << "What is the name of the file: "; //asking user for the file name
+    getline(cin, filename); //user input for the filename
+    this_file.open(filename.c_str()); //opening the file, using cstring
+
+    while(this_file.fail())//while the correct file is not found
+
+    {
+        cout << filename << " " << "file not found" << endl; //couts the file is not found
+        cout << "Enter in another file: "; //asks the user to enter the correct file
+        getline(cin, filename); //will read in the correct file
+        this_file.open(filename.c_str());
+    }
+    string Contents = "", temp;
+	if (this_file.is_open())//if input file is open, do the following:
+	{
+		outfile.open("hashed_socials.txt"); //open an output text file
+		while (this_file.peek() != EOF)//peek is reads and returns the next character without extracting
+            //this from the steam and while this is not equal to end of file
+		{
+		    this_file >> temp; //will read in  temp
+		   Contents += temp; //will increment  tamp
+
+		}
+	}
+
+	vector<int> allNums; //creating a new vector
+	temp = "";
+	for (int i = 0; i < Contents.size(); i++) { //it will go through the size of the file and incremenet through
+        if (Contents[i] == ',') { //delimiting the comma 
+            allNums.push_back(atoi(temp.c_str()));
+            temp = ""; //will push it back to a space
+        }
+        else {
+            temp += Contents[i]; //else it will return the contents
+        }
+	}
+
+    int index;
+	for (int i = 0; i < allNums.size(); i++) { //going through the hash table and 
+        index = extractionMethod(allNums.at(i)); //implementing the extraction method
+        if (hash_table[index] == 0) { //if the index is at 0
+            hash_table[index] = allNums[i]; //passing through the array
+            cout << allNums[i] << " NO COLLISION /n"; //will say if there is a collision
+        }
+        else {
+            cout << allNums[i] << " COLLISION /n"; //else there is a collison
+            index = quadraticProbing(index, 100000); //implementing quadratic probing
+            if (index != -1) { //if the index is at -1
+                hash_table[index] = allNums[i]; //it will pass through the array
+                cout << "put in " << index << " instead" << endl;
+            }
+            else {
+                cout << "FULL" << endl; //else the hashtable is full
+                break; //breaks if its full
+            }
+        }
+      
+	}
+
+
+    for (int i = 0; i < 100000; i++) { //for loop delimiting the commas
+        outfile << hash_table[i] << ",";
+    }
+
+	this_file.clear(); //will clear input file
+	outfile.clear(); //will clear output file
+	this_file.close(); //close the input file
+    outfile.close(); //close the output file
+    outfile << "\n";
+
+    cout<< extractionMethod(123456789) << endl; //writing out the extraction method to the console
+
+
+    return 0;
+}
